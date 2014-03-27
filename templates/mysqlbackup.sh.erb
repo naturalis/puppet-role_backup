@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# MySQL Backup Script
+#  Dumps mysql databases to a file for another backup tool to pick up.
+#
+# MySQL code:
+# GRANT SELECT, RELOAD, LOCK TABLES ON *.* TO 'user'@'localhost'
+# IDENTIFIED BY 'password';
+# FLUSH PRIVILEGES;
+#
+##### START CONFIG ###################################################
+
+USER=<%= @mysqlbackupuser %>
+PASS=<%= @mysqlbackuppassword %>
+DIR=<%= @backuprootfolder %>/mysql
+PREFIX=mysql
+
+##### STOP CONFIG ####################################################
+PATH=/usr/bin:/usr/sbin:/bin:/sbin
+
+set -o pipefail
+
+
+<% if @mysqlalldatabases == true -%>
+mysqldump -u${USER} -p${PASS} --opt --flush-logs --single-transaction --all-databases | bzcat -zc > ${DIR}/${PREFIX}.sql.bz2
+<% else -%>
+mysqldump -u${USER} -p${PASS} --opt --flush-logs --single-transaction --databases <% @mysqldatabasearray.each do |db| -%><%=db %> <% end -%> | bzcat -zc ${DIR}/${PREFIX}.sql.bz2
+<% end -%>
+
+
+
+
+

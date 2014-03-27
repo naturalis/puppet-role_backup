@@ -2,13 +2,14 @@
 #
 #
 class role_backup(
-  $backup                = false,
+  $backup                = true,
+  $backuprootfolder      = '/var/backup',
   $backupdestination     = 's3',
-  $directories           = ['/etc','/var/backup','/home'],
+  $directories           = ['/etc','/home'],
   $backupbucket          = 'linuxbackups',
   $backupfolder          = $fqdn,
-  $dest_id               = undef,
-  $dest_key              = undef,
+  $dest_id               = 'rwert',
+  $dest_key              = '345345',
   $cloud                 = 's3',
   $hour                  = 1,
   $minute                = 1,
@@ -22,34 +23,72 @@ class role_backup(
   $restorefolder         = undef,
   $restorelatest         = true,
   $restoredays           = undef,
-  $mysqlbackup           = false,
+  $mysqlbackup           = true,
   $mysqlbackupuser       = 'backupuser',
   $mysqlbackuppassword   = 'backupuserpwd',
-  $mysqlalldatabases     = true,
+  $mysqlalldatabases     = false,
   $mysqldatabasearray    = ['db1', 'db2'],
   $postgresbackup        = false,
-  $backupprecommand      = undef,
   $backuppostcommand     = undef,
-  $restoreprecommand     = undef,
   $restorepostcommand    = undef,
   $burpserver            = undef,
   $burphostname          = undef,
   $burppassword          = 'password',
-  $burpincludes          = ['/etc','/var/backup'],
+  $burpincludes          = ['/etc'],
   $burpexcludes          = undef,
-  $burpoptions           = undef,
+  $burpoptions           = undef
 ){
+  file { $backuprootfolder: 
+    ensure                  => "directory",
+    mode                    => "700"
+  }
 
   if ($backup == true ) {
+    if ($mysqlbackup == true) {
+      if ($pre_command == "") { $_pre_command = "/usr/local/sbin/mysqlbackup.sh" }
+      if ($pre_command != "") { $_pre_command = "${pre_command} && /usr/local/sbin/mysqlbackup.sh" }
+    }
+
     if ($backupdestination == 'burp') {
       class { 'role_backup::burpbackup':
       }
     } 
-    if ($backupdestination == 's3')
+    if ($backupdestination == 's3') {
       class { 'role_backup::s3backup':
+        dest_id             => $dest_id,
+        dest_key            => $dest_key,
+        cloud               => $cloud,
+        hour                => $hour,
+        minute              => $minute,
+        full_if_older_than  => $full_if_older_than,
+        pre_command         => $_pre_command,
+        remove_older_than   => $remove_older_than,
+        backupbucket        => $backupbucket,
+        backupfolder        => $backupfolder,
+        directories         => $directories
+      }
     }
-    if ($backupdestination != 's3' and $backupdestination != 'burp') {
-      fail("unsupported backupdestination: ${backupdestination)
+    if ($backupdestination != "s3") and ($backupdestination != "burp") {
+      fail("unsupported backupdestination: ${backupdestination}")
+    }
+  }
+
+  if ($mysqlbackup == true ) {
+    class { 'role_backup::mysqlbackup':
+      mysqlbackupuser       => $mysqlbackupuser,
+      mysqlalldatabases     => $mysqlalldatabases,
+      mysqldatabasearray    => $mysqldatabasearray,
+      mysqlbackuppassword   => $mysqlbackuppassword,
+      backuprootfolder      => $backuprootfolder
+    }
+  }
+  if ($postgresbackup == true ) {
+    class { 'role_backup::mysqlbackup':
+      mysqlbackupuser       => $mysqlbackupuser,
+      mysqlalldatabases     => $mysqlalldatabases,
+      mysqldatabasearray    => $mysqldatabasearray,
+      mysqlbackuppassword   => $mysqlbackuppassword,
+      backuprootfolder      => $backuprootfolder
     }
   }
 
