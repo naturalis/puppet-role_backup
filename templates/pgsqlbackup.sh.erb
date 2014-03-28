@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# PgSQL Backup Script
+#Dumps postgres databases to a file for another backup tool to pick up.
+#
+##### START CONFIG ###################################################
+
+USER=<%= @pgsqlbackupuser %>
+DIR=<%= @backuprootfolder %>/pgsql
+PREFIX=pgsql
+
+##### STOP CONFIG ####################################################
+PATH=/usr/bin:/usr/sbin:/bin:/sbin
+
+set -o pipefail
+
+<% if @pgsqlalldatabases == true -%>
+su - ${USER} -c "pg_dumpall" | gzip -c > ${DIR}/${PREFIX}.gz
+<% else -%>
+<% @pgsqldatabasearray.each do |db| -%>
+su - ${USER} -c "pg_dump <%=db %>" | gzip -c > ${DIR}/${PREFIX}_<%=db %>.gz
+<% end -%> 
+<% end -%>
+
+
+
+
+

@@ -1,15 +1,14 @@
-# == Class: role_backup
+# == Class: role_backup::burpbackup
 #
 #
-class role_backup(
-  $backupprecommand      = undef,
-  $backuppostcommand     = undef,
+class role_backup::burpbackup(
   $burpserver            = undef,
-  $burphostname          = undef,
-  $burppassword          = 'password',
-  $burpincludes          = ['/etc','/var/backup'],
-  $burpexcludes          = undef,
-  $burpoptions           = undef,
+  $burpconfig_hash       = undef,
 ){
-
+  class { 'burp':
+    mode                => 'client',
+    server              => $burpserver,
+    config_hash         => $burpconfig_hash,
+  }
 }
+
