@@ -27,8 +27,8 @@ class role_backup(
   $mpgqlalldatabases     = false,
   $pgsqldatabasearray    = ['db1', 'db2'],
   $burpserver            = undef,
-  $burpcname             = $fqdn,
-  $burpexludes           = ['/var/spool','/tmp'],
+  $burpcname             = undef,
+  $burpexcludes          = ['/var/spool','/tmp'],
   $burpoptions           = ['# random test option'],
   $burppassword          = 'password'
 )
@@ -106,16 +106,26 @@ class role_backup(
     if ($pre_command != "") and ($_pre_command == ""){
       $_burpoptions    = [$burpoptions,"backup_script_pre=${pre_command}"]
     }
-    $burpconfig_hash       = { "${burpcname}" => {
-                                      includes => "${_directories}",
-                                      excludes => "${burpexcludes}",
-                                      options  => "${_burpoptions}",
-                                      password => "${burppassword}",
-                                    }
-                              }
-    class { 'role_backup::burpbackup':
-      burpserver          => $burpserver,
-      burpconfig_hash     => $burpconfig_hash
+    if ($_directories == ""){
+      $_directories = $directories
+    }
+    if ($_burpoptions == "") and ($burpoptions != ""){
+      $_burpoptions = $burpoptions
+    }
+    if ($burpcname == "") { 
+      $cname = $fqdn
+    } else {
+      $cname = $burpcname
+    }
+    class { 'burp':
+      mode                  => 'client',
+      server                => $burpserver,
+      includes              => $_directories,
+      excludes              => $burpexcludes,
+      options               => $_burpoptions,
+      password              => $burppassword,
+      client_password       => $burppassword,
+      cname                 => $cname
     }
   }
 }
