@@ -3,8 +3,10 @@
 #
 class role_backup(
   $backup                = false,
+  $autorestore           = false,
   $backuprootfolder      = '/var/backup',
   $backupdestination     = 'burp',
+  $restoresource         = 'burp',
   $directories           = ['/etc','/home'],
   $backupbucket          = 'linuxbackups',
   $backupfolder          = $fqdn,
@@ -17,12 +19,14 @@ class role_backup(
   $pre_command           = undef,
   $remove_older_than     = 61,
   $allow_source_mismatch = false,
+  $mysqlrestore          = false,
   $mysqlbackup           = false,
   $mysqlbackupuser       = 'backupuser',
   $mysqlbackuppassword   = 'backupuserpwd',
   $mysqlalldatabases     = false,
   $mysqldatabasearray    = ['db1', 'db2'],
   $pgsqlbackup           = false,
+  $pgsqlrestore          = false,
   $pgsqlbackupuser       = 'postgres',
   $mpgqlalldatabases     = false,
   $pgsqldatabasearray    = ['db1', 'db2'],
@@ -77,9 +81,6 @@ class role_backup(
     if ($backupdestination != "s3") and ($backupdestination != "burp") {
       fail("unsupported backupdestination: ${backupdestination}")
     }
-  
-  
-
 
   if ($mysqlbackup == true ) {
     class { 'role_backup::mysqlbackup':
@@ -126,6 +127,23 @@ class role_backup(
       password              => $burppassword,
       client_password       => $burppassword,
       cname                 => $cname
+    }
+  }
+
+  if ($restoresource != "burp") {
+    fail("unsupported restoresource: ${restoresource}")
+  }
+
+  if ($autorestore == true){
+    if ($backup == false) {
+      fail("can't restore without configured backup")
+    }
+    if ($restoresource == "burp"){
+      exec { "burprestore":
+        command     => "usr/sbin/service cron stop && /usr/sbin/burp -a r > ${backuprootfoler}/restorelog.txt && usr/sbin/service cron start",
+        unless      => "test -f ${backuprootfolder}/restorelog.txt",
+        require     => [Package["burp"], File[$backuprootfolder]]
+      }
     }
   }
 }
