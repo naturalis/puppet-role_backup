@@ -3,7 +3,7 @@
 #
 class role_backup(
   $backup                = false,
-  $autorestore           = false,
+  $restorefromclient     = undef,
   $backuprootfolder      = '/var/backup',
   $backupdestination     = 'burp',
   $restoresource         = 'burp',
@@ -32,9 +32,12 @@ class role_backup(
   $pgsqldatabasearray    = ['db1', 'db2'],
   $burpserver            = undef,
   $burpcname             = undef,
+  $burpcron              = false,
   $burpexcludes          = ['/var/spool','/tmp'],
   $burpoptions           = ['# random test option'],
-  $burppassword          = 'password'
+  $burppassword          = 'password',
+  $burprestore           = false,
+  $burprestorecname      = $fqdn,
 )
 {
 
@@ -101,17 +104,16 @@ class role_backup(
   }
 
   if ($backupdestination == 'burp') and ($backup == true) {
-    if ($_pre_command !=""){
-      $_burpoptions    = [$burpoptions,"backup_script_pre=${_pre_command}"]
-    }
-    if ($pre_command != "") and ($_pre_command == ""){
-      $_burpoptions    = [$burpoptions,"backup_script_pre=${pre_command}"]
+    if ($_pre_command != "") {
+      $backup_script_pre = "backup_script_pre=/usr/local/sbin/burpscript.sh"
+      file {"/usr/local/sbin/burpscript.sh":
+        ensure                  => "file",
+        mode                    => "700",
+        content                 => template('role_backup/burpscript.sh.erb')
+      }
     }
     if ($_directories == ""){
       $_directories = $directories
-    }
-    if ($_burpoptions == "") and ($burpoptions != ""){
-      $_burpoptions = $burpoptions
     }
     if ($burpcname == "") { 
       $cname = $fqdn
@@ -123,10 +125,11 @@ class role_backup(
       server                => $burpserver,
       includes              => $_directories,
       excludes              => $burpexcludes,
-      options               => $_burpoptions,
+      options               => $burpoptions,
       password              => $burppassword,
       client_password       => $burppassword,
-      cname                 => $cname
+      cname                 => $cname,
+      cron                  => $burpcron
     }
   }
 
@@ -134,16 +137,18 @@ class role_backup(
     fail("unsupported restoresource: ${restoresource}")
   }
 
-  if ($autorestore == true){
+  if ($burprestore == true){
     if ($backup == false) {
       fail("can't restore without configured backup")
     }
     if ($restoresource == "burp"){
-      exec { "burprestore":
-        command     => "usr/sbin/service cron stop && /usr/sbin/burp -a r > ${backuprootfoler}/restorelog.txt && usr/sbin/service cron start",
-        unless      => "test -f ${backuprootfolder}/restorelog.txt",
-        require     => [Package["burp"], File[$backuprootfolder]]
+      if ($restorefromclient != ""){
+        $restore_client     = "-C ${restorefromclient}"
+      }
+      class { 'role_backup::burprestore':
+        cname               => $burprestorecname,
       }
     }
   }
+  
 }
