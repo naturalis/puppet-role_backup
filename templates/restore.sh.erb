@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+# Restore Script 
+#
+PATH=/usr/bin:/usr/sbin:/bin:/sbin
+<%= @_restore_pre_command -%>
+<%= @_restore_command -%> 
+<%= @_restore_mysql_command -%> 
+<%= @_restore_pgsql_command -%> 
+<%= @_restore_post_command -%> 
+
+
+
+
+

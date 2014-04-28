@@ -2,20 +2,51 @@
 #
 #
 class role_backup::restore(
-  $server,
-  $cname                = $fqdn,
-  $password             = 'password',
-){
-  file {"$backuprootfolder/mysql":
-    ensure                  => "directory",
-    mode                    => "700",
-    require                 => File[$backuprootfolder]
+  $backuprootfolder      = undef,
+  $directories           = undef,
+  $mysqlrestore          = undef,
+  $mysqlbackupuser       = undef,
+  $mysqlbackuppassword   = undef,
+  $mysqlalldatabases     = undef,
+  $mysqldatabasearray    = undef,
+  $pgsqlrestore          = undef,
+  $pgsqlbackupuser       = undef,
+  $pgsqlalldatabases     = undef,
+  $pgsqldatabasearray    = undef,
+  $burpcname             = undef,
+)
+{
+
+
+  $_restore_pre_command = "/usr/sbin/service cron stop"
+  $_restore_post_command = "/usr/sbin/service cron start"
+
+
+  if ( $role_backup::restoresource == "burp"){ 
+    if ($role_backup::burprestorecname != ""){
+      $_restore_command = "/usr/sbin/burp -C ${::burprestorecname} -a r"
+    }else{
+      $_restore_command = "/usr/sbin/burp -a r"
+    }
+  }
+  if ( $mysqlrestore == true){ 
+    if ($mysqlalldatabase == true){
+      $_restore_mysql_command = ""
+    }else{
+      $_restore_mysql_command = ""
+    }
   }
 
-  file {"/usr/local/sbin/mysqlbackup.sh":
-    ensure                  => "file",
-    mode                    => "700",
-    content                 => template('role_backup/mysqlbackup.sh.erb')
+  if ( $pgsqlrestore == true){ 
+    if ($pgsqlalldatabase == true){
+      $_restore_pgsql_command = ""
+    }else{
+      $_restore_pgsql_command = ""
+    }
   }
 
+ file {"/usr/local/sbin/restore.sh":
+    mode                    => "700",
+    content                 => template('role_backup/restore.sh.erb')
+  }
 }

@@ -35,9 +35,13 @@ All parameters are read from defaults in init.pp and can be overwritten by hiera
   $pgsqldatabasearray    = ['db1', 'db2'],      ' pgsql Backup array of databases
   $burpserver            = undef,               ' Burp server address
   $burpcname             = $fqdn,               ' Burp client name
+  $burpcron              = false,               ' Burp cron job, initiates every 20 minutes a backup request.
   $burpexludes           = ['/var/spool','/tmp'],       ' Burp excludes array ( includes are $directories )
   $burpoptions           = ['# random test option'],    ' Burp Options array
-  $burppassword          = 'password'           ' Burp client password
+  $burppassword          = 'password',          ' Burp client password
+  $burprestore           = false,               ' Initiate full Burp restore to original location, runs once logs in /var/log/burprestore.log
+  $burprestorecname      = $fqdn,               ' client name to restore from, on the source location the $burpoption array 
+                                                ' must have: "restore_client=clientname" unless the burprestorecname = burpcname
 ```
 
 
@@ -48,7 +52,7 @@ role_backup::mysqlbackup
 role_backup::pgsqlbackup
 role_backup::burpbackup
 role_backup::s3backup
-
+role_backup::burprestore
 
 Dependencies
 -------------
