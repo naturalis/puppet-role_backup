@@ -4,6 +4,7 @@
 class role_backup(
   $backup                = false,
   $restorescript         = false,
+  $restorefromclient     = undef,
   $backuprootfolder      = '/var/backup',
   $backupdestination     = 'burp',
   $restoresource         = 'burp',
