@@ -25,11 +25,12 @@ class role_backup(
   $mysqlbackupuser       = 'backupuser',
   $mysqlbackuppassword   = 'backupuserpwd',
   $mysqlalldatabases     = false,
+  $mysqlfileperdatabase  = true,
   $mysqldatabasearray    = ['db1', 'db2'],
   $pgsqlbackup           = false,
   $pgsqlrestore          = false,
   $pgsqlbackupuser       = 'postgres',
-  $mpgqlalldatabases     = false,
+  $pgsqlalldatabases     = false,
   $pgsqldatabasearray    = ['db1', 'db2'],
   $burpserver            = undef,
   $burpcname             = undef,
@@ -138,18 +139,6 @@ class role_backup(
       fail("can't restore without configured backup")
     }
     class { 'role_backup::restore':
-      burpcname             => $burpcname,
-      mysqlrestore          => $mysqlrestore,
-      restoresource         => $restoresource,
-      pgsqlrestore          => $pqsqlrestore,
-      mysqlbackupuser       => $mysqlbackupuser,
-      mysqlalldatabases     => $mysqlalldatabases,
-      mysqldatabasearray    => $mysqldatabasearray,
-      mysqlbackuppassword   => $mysqlbackuppassword,
-      pgsqlbackupuser       => $pgsqlbackupuser,
-      pgsqlalldatabases     => $pgsqlalldatabases,
-      pgsqldatabasearray    => $pgsqldatabasearray,
-      backuprootfolder      => $backuprootfolder
     }
   }
   

@@ -3,12 +3,45 @@
 # Restore Script 
 #
 PATH=/usr/bin:/usr/sbin:/bin:/sbin
-<%= @_restore_pre_command -%>
+<%= @_restore_pre_command -%> 
 <%= @_restore_command -%> 
-<%= @_restore_mysql_command -%> 
-<%= @_restore_pgsql_command -%> 
-<%= @_restore_post_command -%> 
 
+<% if @mysqlrestore == true %>
+USER=<%= @mysqlbackupuser %>
+PASS=<%= @mysqlbackuppassword %>
+DIR=<%= @backuprootfolder %>/mysql
+PREFIX=mysql
+
+echo "-----------------------------------------------------"
+read -p "Press enter to start mysql import"
+<% if @mysqlalldatabases == true -%>
+  <% if @mysqlfileperdatabase == true -%>
+    for i in ${DIR}/${PREFIX}_* ; do
+      db=${i/${DIR}\/${PREFIX}_/}
+      db=${db/.sql.gz/}
+      echo "Currently importing db: ${db}"
+      mysql -u${USER} -p${PASS} -e "CREATE DATABASE IF NOT EXISTS ${db}"
+      gunzip < $i | mysql -u${USER} -p${PASS} ${db}
+    done
+  <% else -%>
+      echo "Importing all mysqldatabases"
+      gunzip < ${DIR}/${PREFIX}.sql.gz | mysql -u${USER} -p${PASS}
+  <% end -%>
+<% else -%>
+  <% if @mysqlfileperdatabase == true -%>
+    <% @mysqldatabasearray.each do |db| -%>
+      echo "Currently importing db: <%= db %>"
+      mysql -u${USER} -p${PASS} -e "CREATE DATABASE IF NOT EXISTS <%= db %>"
+      gunzip < ${DIR}/${PREFIX}_<%= db %>.sql.gz | mysql -u${USER} -p${PASS} <%= db %>
+    <% end -%>
+  <% else -%>
+    echo "Importing databases <% @mysqldatabasearray.each do |db| -%><%= db %><% end -%> from single file"
+    gunzip < ${DIR}/${PREFIX}.sql.gz | mysql -u${USER} -p${PASS}
+  <% end -%>
+<% end -%>
+<% end -%>
+
+<%= @_restore_post_command -%> 
 
 
 

@@ -1,20 +1,7 @@
 # == Class: role_backup::restore
 #
 #
-class role_backup::restore(
-  $backuprootfolder      = undef,
-  $directories           = undef,
-  $mysqlrestore          = undef,
-  $mysqlbackupuser       = undef,
-  $mysqlbackuppassword   = undef,
-  $mysqlalldatabases     = undef,
-  $mysqldatabasearray    = undef,
-  $pgsqlrestore          = undef,
-  $pgsqlbackupuser       = undef,
-  $pgsqlalldatabases     = undef,
-  $pgsqldatabasearray    = undef,
-  $burpcname             = undef,
-)
+class role_backup::restore
 {
 
 
@@ -24,21 +11,21 @@ class role_backup::restore(
 
   if ( $role_backup::restoresource == "burp"){ 
     if ($role_backup::burprestorecname != ""){
-      $_restore_command = "/usr/sbin/burp -C ${::burprestorecname} -a r"
+      $_restore_command = "/usr/sbin/burp -C ${role_backup::burprestorecname} -a r"
     }else{
       $_restore_command = "/usr/sbin/burp -a r"
     }
   }
-  if ( $mysqlrestore == true){ 
-    if ($mysqlalldatabase == true){
+  if ( $role_backup::mysqlrestore == true){ 
+    if ($role_backup::mysqlalldatabase == true){
       $_restore_mysql_command = ""
     }else{
       $_restore_mysql_command = ""
     }
   }
 
-  if ( $pgsqlrestore == true){ 
-    if ($pgsqlalldatabase == true){
+  if ( $role_backup::pgsqlrestore == true){ 
+    if ($role_backup::pgsqlalldatabase == true){
       $_restore_pgsql_command = ""
     }else{
       $_restore_pgsql_command = ""

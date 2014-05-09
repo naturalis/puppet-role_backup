@@ -22,9 +22,24 @@ set -o pipefail
 
 
 <% if @mysqlalldatabases == true -%>
-mysqldump -u${USER} -p${PASS} --opt --flush-logs --single-transaction --all-databases | gzip -c > ${DIR}/${PREFIX}.sql.gz
+  <% if @mysqlfileperdatabase == true -%>
+    mysql -u${USER} -p${PASS} -s -r -N -e 'SHOW DATABASES' | while read dbname
+    do
+    mysqldump -u${USER} -p${PASS} --opt --flush-logs --single-transaction \
+      ${EVENTS} \
+      ${dbname} | gzip -c > ${DIR}/${PREFIX}_${dbname}.sql.gz
+    done
+  <% else -%>
+    mysqldump -u${USER} -p${PASS} --opt --flush-logs --single-transaction --all-databases | gzip -c > ${DIR}/${PREFIX}.sql.gz
+  <% end -%>
 <% else -%>
-mysqldump -u${USER} -p${PASS} --opt --flush-logs --single-transaction --databases <% @mysqldatabasearray.each do |db| -%><%=db %> <% end -%> | gzip -c ${DIR}/${PREFIX}.sql.gz
+  <% if @mysqlfileperdatabase == true -%>
+    <% @mysqldatabasearray.each do |db| -%>
+      mysqldump -u${USER} -p${PASS} --opt --flush-logs --single-transaction --databases <%=db %> | gzip -c ${DIR}/${PREFIX}_<%=db %>.sql.gz
+    <% end -%>
+  <% else -%>
+    mysqldump -u${USER} -p${PASS} --opt --flush-logs --single-transaction --databases <% @mysqldatabasearray.each do |db| -%><%=db %> <% end -%> | gzip -c ${DIR}/${PREFIX}.sql.gz
+  <% end -%>
 <% end -%>
 
 
