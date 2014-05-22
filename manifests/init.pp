@@ -9,17 +9,7 @@ class role_backup(
   $backupdestination     = 'burp',
   $restoresource         = 'burp',
   $directories           = ['/etc','/home'],
-  $backupbucket          = 'linuxbackups',
-  $backupfolder          = $fqdn,
-  $dest_id               = undef,
-  $dest_key              = undef,
-  $cloud                 = 's3',
-  $hour                  = 1,
-  $minute                = 1,
-  $full_if_older_than    = 60,
   $pre_command           = undef,
-  $remove_older_than     = 61,
-  $allow_source_mismatch = false,
   $mysqlrestore          = false,
   $mysqlbackup           = false,
   $mysqlbackupuser       = 'backupuser',
@@ -66,25 +56,9 @@ class role_backup(
     }
   }
 
-    if ($backupdestination == 's3') {
-      class { 'role_backup::s3backup':
-        dest_id             => $dest_id,
-        dest_key            => $dest_key,
-        cloud               => $cloud,
-        hour                => $hour,
-        minute              => $minute,
-        full_if_older_than  => $full_if_older_than,
-        pre_command         => $_pre_command,
-        remove_older_than   => $remove_older_than,
-        backupbucket        => $backupbucket,
-        backupfolder        => $backupfolder,
-        directories         => $_directories
-      }
-    }
-
-    if ($backupdestination != "s3") and ($backupdestination != "burp") {
-      fail("unsupported backupdestination: ${backupdestination}")
-    }
+  if ($backupdestination != "s3") and ($backupdestination != "burp") {
+    fail("unsupported backupdestination: ${backupdestination}")
+  }
 
   if ($mysqlbackup == true ) {
     class { 'role_backup::mysqlbackup':

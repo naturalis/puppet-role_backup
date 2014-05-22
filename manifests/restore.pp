@@ -11,9 +11,9 @@ class role_backup::restore
 
   if ( $role_backup::restoresource == "burp"){ 
     if ($role_backup::burprestorecname != ""){
-      $_restore_command = "/usr/sbin/burp -C ${role_backup::burprestorecname} -a r"
+      $_restore_command = "/usr/sbin/burp -C ${role_backup::burprestorecname} -a r -f"
     }else{
-      $_restore_command = "/usr/sbin/burp -a r"
+      $_restore_command = "/usr/sbin/burp -a r -f"
     }
   }
   if ( $role_backup::mysqlrestore == true){ 
