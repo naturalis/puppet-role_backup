@@ -39,11 +39,11 @@ All parameters are read from defaults in init.pp and can be overwritten by hiera
 
 Classes
 -------------
-role_backup
-role_backup::mysqlbackup
-role_backup::pgsqlbackup
-role_backup::burpbackup
-role_backup::burprestore
+- role_backup
+- role_backup::mysqlbackup
+- role_backup::pgsqlbackup
+- role_backup::burpbackup
+- role_backup::burprestore
 
 Dependencies
 -------------
@@ -61,6 +61,7 @@ This module has been built on and tested against Puppet 3 and higher.
 
 The module has been tested on:
 - Ubuntu 12.04LTS 
+- Ubuntu 14.04LTS 
 
 
 Authors
