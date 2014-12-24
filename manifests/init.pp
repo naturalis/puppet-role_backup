@@ -28,7 +28,7 @@ class role_backup(
   $burpexcludes          = ['/var/spool','/tmp'],
   $burpoptions           = ['# random test option'],
   $burppassword          = 'password',
-  $burprestorecname      = $fqdn,
+  $burprestorecname      = undef,
 )
 {
 
