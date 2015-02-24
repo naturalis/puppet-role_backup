@@ -104,7 +104,8 @@ class role_backup(
       password              => $burppassword,
       client_password       => $burppassword,
       cname                 => $cname,
-      cron                  => $burpcron
+      cron                  => $burpcron,
+      backup_script_pre     => $backup_script_pre
     }
   }
 
