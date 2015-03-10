@@ -17,6 +17,7 @@ class role_backup(
   $mysqlalldatabases     = false,
   $mysqlfileperdatabase  = true,
   $mysqldatabasearray    = ['db1', 'db2'],
+  $sambabackup           = false,
   $pgsqlbackup           = false,
   $pgsqlrestore          = false,
   $pgsqlbackupuser       = 'postgres',
@@ -37,30 +38,27 @@ class role_backup(
     mode                    => "700"
   }
 
-  if ($backup == true ) {
-    if ($pgsqlbackup == true) and ($mysqlbackup == true) {
-      if ($pre_command == "") { $_pre_command = "/usr/local/sbin/pgsqlbackup.sh && /usr/local/sbin/mysqlbackup.sh" }
-      if ($pre_command != "") { $_pre_command = "${pre_command} && /usr/local/sbin/pgsqlbackup.sh && /usr/local/sbin/mysqlbackup.sh" }
-    }else{
-      if ($mysqlbackup == true) {
-        if ($pre_command == "") { $_pre_command = "/usr/local/sbin/mysqlbackup.sh" }
-        if ($pre_command != "") { $_pre_command = "${pre_command} && /usr/local/sbin/mysqlbackup.sh" }
-      }
-      if ($pgsqlbackup == true) {
-        if ($pre_command == "") { $_pre_command = "/usr/local/sbin/pgsqlbackup.sh" }
-        if ($pre_command != "") { $_pre_command = "${pre_command} && /usr/local/sbin/pgsqlbackup.sh" }
-      }
-    }
-    if ($pgsqlbackup == true) or ($mysqlbackup == true) {
-      $_directories  = [$directories,$backuprootfolder]
-    }
+  if ($pre_command != "") {
+    $pre_command_script = $pre_command
+  }
+
+  if ($pgsqlbackup == true) or ($mysqlbackup == true) or ($sambabackup == true){
+    $_directories = [$directories,$backuprootfolder]
   }
 
   if ($backupdestination != "s3") and ($backupdestination != "burp") {
     fail("unsupported backupdestination: ${backupdestination}")
   }
 
+  if ($sambabackup == true ) {
+    $sambascript = "/usr/local/sbin/sambabackup.sh"
+    class { 'role_backup::sambabackup':
+      backuprootfolder      => $backuprootfolder
+    }
+  }
+
   if ($mysqlbackup == true ) {
+    $mysqlscript = "/usr/local/sbin/mysqlbackup.sh"
     class { 'role_backup::mysqlbackup':
       mysqlbackupuser       => $mysqlbackupuser,
       mysqlalldatabases     => $mysqlalldatabases,
@@ -69,7 +67,9 @@ class role_backup(
       backuprootfolder      => $backuprootfolder
     }
   }
+
   if ($pgsqlbackup == true ) {
+    $pgsqlscript = "/usr/local/sbin/pgsqlbackup.sh"
     class { 'role_backup::pgsqlbackup':
       pgsqlbackupuser       => $pgsqlbackupuser,
       pgsqlalldatabases     => $pgsqlalldatabases,
@@ -78,8 +78,10 @@ class role_backup(
     }
   }
 
+  $pre_command_array = [$pre_command_script, $sambascript, $mysqlscript, $pgsqlscript]
+
   if ($backupdestination == 'burp') and ($backup == true) {
-    if ($_pre_command != "") {
+    if ($pre_command_array != "") {
       $backup_script_pre = "backup_script_pre=/usr/local/sbin/burpscript.sh"
       file {"/usr/local/sbin/burpscript.sh":
         ensure                  => "file",

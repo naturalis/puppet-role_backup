@@ -5,11 +5,11 @@
 #
 PATH=/usr/bin:/usr/sbin:/bin:/sbin
 
-<%= @_pre_command -%>
-
-
-
-
+<% @pre_command_array.each do |task| -%>
+<% unless task == :undef -%>
+<%= task %>
+<% end -%> 
+<% end -%>
 
 
 
