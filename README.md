@@ -11,9 +11,9 @@ All parameters are read from defaults in init.pp and can be overwritten by hiera
 ```
   $backup                = false,               ' Enable or disable backup functionality
   $backuprootfolder      = '/var/backup',       ' Root backup folder for database dumps
-  $backupdestination     = 'burp',              ' Destination. only burp is supported
   $directories           = ['/etc','/home'],    ' Backup directory array for burp backups
   $pre_command           = undef,               ' command to run before starting backup ( s3 and burp )
+  $sambabackup           = false,               ' Enable sambabackup script, backup samba database using tdbbackup
   $mysqlbackup           = false,               ' Enable mysqlbackup script  (script wil run as pre script before backup)
   $mysqlbackupuser       = 'backupuser',        ' Mysql backupuser
   $mysqlbackuppassword   = 'backupuserpwd',     ' Mysql backupuser password
@@ -42,8 +42,8 @@ Classes
 - role_backup
 - role_backup::mysqlbackup
 - role_backup::pgsqlbackup
-- role_backup::burpbackup
-- role_backup::burprestore
+- role_backup::sambabackup
+- role_backup::restore
 
 Dependencies
 -------------
@@ -60,8 +60,8 @@ Limitations
 This module has been built on and tested against Puppet 3 and higher.
 
 The module has been tested on:
-- Ubuntu 12.04LTS 
-- Ubuntu 14.04LTS 
+- Ubuntu 12.04LTS
+- Ubuntu 14.04LTS
 
 
 Authors
