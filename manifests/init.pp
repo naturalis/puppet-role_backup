@@ -78,7 +78,7 @@ class role_backup(
   }
 
 # Create array from scripts which will be used in the burpscript.sh
-  $pre_command_array = [$::pre_command, $::sambascript, $::mysqlscript, $::pgsqlscript]
+  $pre_command_array = [$pre_command, $sambascript, $mysqlscript, $pgsqlscript]
 
 # Create backupscript from template
   if ($backup == true) {
