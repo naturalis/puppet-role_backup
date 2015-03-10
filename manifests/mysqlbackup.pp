@@ -1,23 +1,26 @@
-# == Class: role_backup
+# == Class: role_backup::mysqlbackup
 #
+# Mysql backup script class
 #
 class role_backup::mysqlbackup(
   $mysqlalldatabases    = undef,
   $mysqldatabasearray   = undef,
-  $mysqlbackupuser,
-  $mysqlbackuppassword,
-  $backuprootfolder,
+  $mysqlbackupuser      = undef,
+  $mysqlbackuppassword  = undef,
+  $backuprootfolder     = undef,
 ){
 
-  file {"$backuprootfolder/mysql":
-    ensure                  => "directory",
-    mode                    => "700",
+# create mysql directory in backuprootfolder
+  file {"${backuprootfolder}/mysql":
+    ensure                  => 'directory',
+    mode                    => '0700',
     require                 => File[$backuprootfolder]
   }
 
-  file {"/usr/local/sbin/mysqlbackup.sh":
-    ensure                  => "file",
-    mode                    => "700",
+# create mysql backup script from template
+  file {'/usr/local/sbin/mysqlbackup.sh':
+    ensure                  => 'file',
+    mode                    => '0700',
     content                 => template('role_backup/mysqlbackup.sh.erb')
   }
 

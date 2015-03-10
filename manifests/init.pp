@@ -6,7 +6,6 @@ class role_backup(
   $restorescript         = false,
   $restorefromclient     = undef,
   $backuprootfolder      = '/var/backup',
-  $backupdestination     = 'burp',
   $restoresource         = 'burp',
   $directories           = ['/etc','/home'],
   $pre_command           = undef,
@@ -33,32 +32,31 @@ class role_backup(
 )
 {
 
-  file { $backuprootfolder: 
-    ensure                  => "directory",
-    mode                    => "700"
+# Create backup location for database dumps or other script related backup files
+  file { $backuprootfolder:
+    ensure                  => 'directory',
+    mode                    => '0700'
   }
 
-  if ($pre_command != "") {
-    $pre_command_script = $pre_command
-  }
-
+# Only add backuprootfolder location to the array of the directories
+# when atleast one special backup scripts is true
   if ($pgsqlbackup == true) or ($mysqlbackup == true) or ($sambabackup == true){
     $_directories = [$directories,$backuprootfolder]
+  } else {
+    $_directories = $directories
   }
 
-  if ($backupdestination != "s3") and ($backupdestination != "burp") {
-    fail("unsupported backupdestination: ${backupdestination}")
-  }
-
+# include class and sambascript with sambabackup=true
   if ($sambabackup == true ) {
-    $sambascript = "/usr/local/sbin/sambabackup.sh"
+    $sambascript = '/usr/local/sbin/sambabackup.sh'
     class { 'role_backup::sambabackup':
       backuprootfolder      => $backuprootfolder
     }
   }
 
+# include class and mysqlscript with mysqlbackup=true
   if ($mysqlbackup == true ) {
-    $mysqlscript = "/usr/local/sbin/mysqlbackup.sh"
+    $mysqlscript = '/usr/local/sbin/mysqlbackup.sh'
     class { 'role_backup::mysqlbackup':
       mysqlbackupuser       => $mysqlbackupuser,
       mysqlalldatabases     => $mysqlalldatabases,
@@ -68,8 +66,9 @@ class role_backup(
     }
   }
 
+# include class and pgsqlscript with pgsqlbackup=true
   if ($pgsqlbackup == true ) {
-    $pgsqlscript = "/usr/local/sbin/pgsqlbackup.sh"
+    $pgsqlscript = '/usr/local/sbin/pgsqlbackup.sh'
     class { 'role_backup::pgsqlbackup':
       pgsqlbackupuser       => $pgsqlbackupuser,
       pgsqlalldatabases     => $pgsqlalldatabases,
@@ -78,25 +77,26 @@ class role_backup(
     }
   }
 
-  $pre_command_array = [$pre_command_script, $sambascript, $mysqlscript, $pgsqlscript]
+# Create array from scripts which will be used in the burpscript.sh
+  $pre_command_array = [$::pre_command, $::sambascript, $::mysqlscript, $::pgsqlscript]
 
-  if ($backupdestination == 'burp') and ($backup == true) {
-    if ($pre_command_array != "") {
-      $backup_script_pre = "backup_script_pre=/usr/local/sbin/burpscript.sh"
-      file {"/usr/local/sbin/burpscript.sh":
-        ensure                  => "file",
-        mode                    => "700",
+# Create backupscript from template
+  if ($backup == true) {
+    if ($pre_command_array != '') {
+      $backup_script_pre = 'backup_script_pre=/usr/local/sbin/burpscript.sh'
+      file {'/usr/local/sbin/burpscript.sh':
+        ensure                  => 'file',
+        mode                    => '0700',
         content                 => template('role_backup/burpscript.sh.erb')
       }
     }
-    if ($_directories == ""){
-      $_directories = $directories
-    }
-    if ($burpcname == "") { 
-      $cname = $fqdn
+# set cname variable for burp class
+    if ($burpcname == '') {
+      $cname = $::fqdn
     } else {
       $cname = $burpcname
     }
+# include burp class
     class { 'burp':
       mode                  => 'client',
       server                => $burpserver,
@@ -111,12 +111,12 @@ class role_backup(
     }
   }
 
+# add restore script to /usr/local/sbin/restore.sh when restorescript = true
   if ($restorescript == true){
     if ($backup == false) {
-      fail("can't restore without configured backup")
+      fail('can not restore without backup being configured')
     }
     class { 'role_backup::restore':
     }
   }
-  
 }
