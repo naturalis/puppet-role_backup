@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# Check burp backup status by Hugo van Duijn
+#
+# Designed for usage with sensu
+#
+# Makes use of the syslog and syslog.1 files for detecting last successfull backup
+# Creates errorlevel 2 for critical conditions, 1 for warning conditions and 0 if 
+# backup is younger than warninghours
+#
+
+difference=0
+backupseconds=0
+warninghours=<%= @chkwarninghours %>
+criticalhours=<%= @chkcriticalhours %>
+currenttime=$(date +%s)
+lastbackup=`ls -tr /var/log/burp/burp.* | tail -2 | xargs cat | grep 'backup finished ok' | tail -1 | awk '{print $1" "$2}'`
+
+# check for backup entry in burp.log and burp.log.1
+if [[ -z $lastbackup ]]
+then
+  echo "No successful backup found in /var/log/burp/burp.log and /var/log/burp/burp.log.1"
+  exit 2
+fi
+
+lastbackup="${lastbackup:0: -1}"
+backupseconds=$(date +%s -d "$lastbackup")
+difference=$(expr $currenttime - $backupseconds )
+
+# check if backup is older than criticalhours
+if [ `expr $difference / 3600` -gt $criticalhours ]
+then 
+  echo "Critical, backup is older than $criticalhours hours, lastbackup : `expr $difference / 3600` hours ago."
+  exit 2
+fi
+
+# check if backup is older than warninghours
+if [ `expr $difference / 3600` -gt $warninghours ]
+then 
+  echo "Warning, backup is older than $warninghours hours, lastbackup : `expr $difference / 3600` hours ago."
+  exit 1
+else
+  echo "Check ok: Backup is less than $warninghours hours old, lastbackup : `expr $difference / 3600` hours ago."
+  exit 0
+fi
+

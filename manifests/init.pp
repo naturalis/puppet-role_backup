@@ -29,6 +29,8 @@ class role_backup(
   $burpoptions           = ['# random test option'],
   $burppassword          = 'password',
   $burprestorecname      = undef,
+  $chkwarninghours       = 24,
+  $chkcriticalhours      = 48,
 )
 {
 
@@ -119,4 +121,19 @@ class role_backup(
     class { 'role_backup::restore':
     }
   }
+
+# create burp check script for usage with monitoring tools ( sensu )
+  file {'/usr/local/sbin/chkburp.sh':
+    ensure                  => 'file',
+    mode                    => '0777',
+    content                 => template('role_backup/chkburp.sh.erb')
+  }
+
+# export check so sensu monitoring can make use of it
+  @sensu::check { 'Check Backup' :
+    command => '/usr/local/sbin/chkburp.sh',
+    tag     => 'central_sensu',
+}
+
+
 }
