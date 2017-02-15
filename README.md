@@ -48,6 +48,9 @@ Classes
 Dependencies
 -------------
 naturalis/puppet-burp
+https://github.com/sensu/sensu-puppet
+
+
 
 
 Result
@@ -57,11 +60,11 @@ Custom backup functionality fit for almost every purpose.
 
 Limitations
 -------------
-This module has been built on and tested against Puppet 3 and higher.
+This module has been built on and tested against Puppet 4 and higher.
 
 The module has been tested on:
-- Ubuntu 12.04LTS
 - Ubuntu 14.04LTS
+- Ubuntu 16.04LTS
 
 
 Authors
