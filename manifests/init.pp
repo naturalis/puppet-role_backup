@@ -25,6 +25,8 @@ class role_backup(
   $burpserver            = undef,
   $burpcname             = undef,
   $burpcron              = false,
+  $burpcronminute        = '*/20',
+  $burpcronhour          = '*',
   $burpexcludes          = ['/var/spool','/tmp'],
   $burpoptions           = ['# random test option'],
   $burppassword          = 'password',
@@ -80,12 +82,12 @@ class role_backup(
   }
 
 # Create array from scripts which will be used in the burpscript.sh
-  $pre_command_array = [$role_backup::pre_command, $sambascript, $mysqlscript, $pgsqlscript]
-
+$pre_command_array = [$role_backup::pre_command, $sambascript, $mysqlscript, $pgsqlscript]
+#$pre_command_array = ['bla','bla','bla']
 
 # Create backupscript from template
-  if ($role_backup::backup == 'true') {
-    if ($pre_command_array != '') {
+  if ($role_backup::backup == true) {
+    if ($role_backup::pre_command_array != '') {
       $backup_script_pre = 'backup_script_pre=/usr/local/sbin/burpscript.sh'
       file {'/usr/local/sbin/burpscript.sh':
         ensure                  => 'file',
@@ -110,6 +112,8 @@ class role_backup(
       client_password       => $role_backup::burppassword,
       cname                 => $cname,
       cron                  => $role_backup::burpcron,
+      cronhour              => $role_backup::burpcronhour,
+      cronminute            => $role_backup::burpcronminute,
       backup_script_pre     => $backup_script_pre
     }
   }
