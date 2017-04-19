@@ -6,16 +6,16 @@ PATH=/usr/bin:/usr/sbin:/bin:/sbin
 <%= @_restore_pre_command -%> 
 <%= @_restore_command -%> 
 
-<% if @mysqlrestore == true %>
-USER=<%= @mysqlbackupuser %>
-PASS=<%= @mysqlbackuppassword %>
-DIR=<%= @backuprootfolder %>/mysql
+<% if scope.lookupvar('role_backup::mysqlrestore') == true %>
+USER=<%= scope.lookupvar('role_backup::@mysqlbackupuser') %>
+PASS=<%= scope.lookupvar('role_backup::@mysqlbackuppassword') %>
+DIR=<%= scope.lookupvar('role_backup::@backuprootfolder') %>/mysql
 PREFIX=mysql
 
 echo "-----------------------------------------------------"
 read -p "Press enter to start mysql import"
-<% if @mysqlalldatabases == true -%>
-  <% if @mysqlfileperdatabase == true -%>
+<% if scope.lookupvar('role_backup::mysqlalldatabases') == true -%>
+  <% if scope.lookupvar('role_backup::mysqlfileperdatabase') == true -%>
     for i in ${DIR}/${PREFIX}_* ; do
       db=${i/${DIR}\/${PREFIX}_/}
       db=${db/.sql.gz/}
@@ -28,18 +28,43 @@ read -p "Press enter to start mysql import"
       gunzip < ${DIR}/${PREFIX}.sql.gz | mysql -u${USER} -p${PASS}
   <% end -%>
 <% else -%>
-  <% if @mysqlfileperdatabase == true -%>
-    <% @mysqldatabasearray.each do |db| -%>
+  <% if scope.lookupvar('role_backup::mysqlfileperdatabase') == true -%>
+    <% scope.lookupvar('role_backup::mysqldatabasearray').each do |db| -%>
       echo "Currently importing db: <%= db %>"
       mysql -u${USER} -p${PASS} -e "CREATE DATABASE IF NOT EXISTS <%= db %>"
       gunzip < ${DIR}/${PREFIX}_<%= db %>.sql.gz | mysql -u${USER} -p${PASS} <%= db %>
     <% end -%>
   <% else -%>
-    echo "Importing databases <% @mysqldatabasearray.each do |db| -%><%= db %><% end -%> from single file"
+    echo "Importing databases <% scope.lookupvar('role_backup::mysqldatabasearray').each do |db| -%><%= db %><% end -%> from single file"
     gunzip < ${DIR}/${PREFIX}.sql.gz | mysql -u${USER} -p${PASS}
   <% end -%>
 <% end -%>
 <% end -%>
+
+
+<% if scope.lookupvar('role_backup::pgsqlrestore') == true %>
+USER=<%= scope.lookupvar('role_backup::pgsqlbackupuser') %>
+DIR=<%= scope.lookupvar('role_backup::backuprootfolder') %>/pgsql
+PREFIX=pgsql
+
+echo "-----------------------------------------------------"
+read -p "Press enter to start pgsql import"
+chown -R ${USER}:root /var/backup
+
+<% if scope.lookupvar('role_backup::pgsqlalldatabases') == true -%>
+      echo "Importing all pgsqldatabases"
+      su ${USER} -c "gunzip < ${DIR}/${PREFIX}.gz | psql postgres"
+<% else -%>
+    <% scope.lookupvar('role_backup::pgsqldatabasearray').each do |db| -%>
+      echo "Currently importing db: <%= db %>"
+      su ${USER} -c "pg_restore --dbname=<%= db %> ${DIR}/${PREFIX}_<%= db %>.dump"
+    <% end -%>
+<% end -%>
+cd ${DIR}
+cd ..
+chown -R root:root /var/backup
+<% end -%>
+
 
 <%= @_restore_post_command -%> 
 
