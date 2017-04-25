@@ -2,37 +2,49 @@
 #
 #
 class role_backup(
+# general options
   $backup                = false,
-  $restorescript         = false,
-  $restorefromclient     = undef,
+  $pgsqlbackupuser       = 'postgres',
+  $pgsqlalldatabases     = false,
+  $pgsqldatabasearray    = ['db1', 'db2'],
   $backuprootfolder      = '/var/backup',
-  $restoresource         = 'burp',
   $directories           = ['/etc','/home'],
-  $pre_command           = undef,
-  $mysqlrestore          = false,
-  $mysqlbackup           = false,
+  $burpserver            = undef,
+  $burpcname             = undef,
   $mysqlbackupuser       = 'backupuser',
   $mysqlbackuppassword   = 'backupuserpwd',
   $mysqlalldatabases     = false,
   $mysqlfileperdatabase  = true,
   $mysqldatabasearray    = ['db1', 'db2'],
+  $burppassword          = 'password',
+  $chkwarninghours       = 24,
+  $chkcriticalhours      = 48,
+
+# backup options
+  $mysqlrestore          = false,
+  $mysqlbackup           = false,
   $sambabackup           = false,
   $pgsqlbackup           = false,
-  $pgsqlrestore          = false,
-  $pgsqlbackupuser       = 'postgres',
-  $pgsqlalldatabases     = false,
-  $pgsqldatabasearray    = ['db1', 'db2'],
-  $burpserver            = undef,
-  $burpcname             = undef,
   $burpcron              = false,
+  $pre_command           = undef,
   $burpcronminute        = '*/20',
   $burpcronhour          = '*',
   $burpexcludes          = ['/var/spool','/tmp'],
   $burpoptions           = ['# random test option'],
-  $burppassword          = 'password',
+
+# restore options
   $burprestorecname      = undef,
-  $chkwarninghours       = 24,
-  $chkcriticalhours      = 48,
+  $pgsqlrestore          = false,
+  $restorescript         = false,
+  $restorefromclient     = undef,
+  $restoresource         = 'burp',
+  $post_restore_command  = '',
+  $pre_restore_command   = '',
+  $restorecron           = false,
+  $restorecronminute     = '0',
+  $restorecronhour       = '5',
+  $restorecronweekday    = '0',
+
 )
 {
 

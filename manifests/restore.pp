@@ -3,9 +3,6 @@
 #
 class role_backup::restore
 {
-# set variables for use in script.
-  $_restore_pre_command = '/usr/sbin/service cron stop'
-  $_restore_post_command = '/usr/sbin/service cron start'
 
 # Define restore command
   if ($role_backup::restorefromclient == undef){
@@ -19,5 +16,16 @@ class role_backup::restore
   file {'/usr/local/sbin/restore.sh':
     mode         => '0700',
     content      => template('role_backup/restore.sh.erb')
+  }
+
+# install restore cron if true
+ if ($role_backup::restorecron == 'true'){
+    cron { 'initiate restore':
+      command => '/usr/local/sbin/restore.sh',
+      user    => root,
+      hour    => $role_backup::restorecronhour,
+      minute  => $role_backup::restorecronminute,
+      weekday => $role_backup::restorecronweekday
+    }
   }
 }

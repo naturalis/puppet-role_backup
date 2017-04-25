@@ -3,8 +3,12 @@
 # Restore Script 
 #
 PATH=/usr/bin:/usr/sbin:/bin:/sbin
-<%= @_restore_pre_command -%> 
-<%= @_restore_command -%> 
+service cron stop
+
+<%= scope.lookupvar('role_backup::pre_restore_command') -%>
+
+
+<%= @_restore_command -%>
 
 <% if scope.lookupvar('role_backup::mysqlrestore') == true %>
 USER=<%= scope.lookupvar('role_backup::@mysqlbackupuser') %>
@@ -65,8 +69,11 @@ cd ..
 chown -R root:root /var/backup
 <% end -%>
 
+<%= scope.lookupvar('role_backup::post_restore_command') -%>
 
-<%= @_restore_post_command -%> 
+service cron start
+
+
 
 
 
