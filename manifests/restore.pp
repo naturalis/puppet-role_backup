@@ -8,10 +8,10 @@ class role_backup::restore
   $_restore_post_command = '/usr/sbin/service cron start'
 
 # Define restore command
-  if ($role_backup::burprestorecname == undef){
+  if ($role_backup::restorefromclient == undef){
     $_restore_command = '/usr/sbin/burp -a r -f'
   }else{
-    $_restore_command = "/usr/sbin/burp -C ${role_backup::burprestorecname} -a r -f"
+    $_restore_command = "/usr/sbin/burp -C ${role_backup::restorefromclient} -a r -f"
   }
 
 # include mysql restore code
