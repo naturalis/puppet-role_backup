@@ -25,6 +25,7 @@ class role_backup(
   $mysqlbackup           = false,
   $sambabackup           = false,
   $pgsqlbackup           = false,
+  $pgsqlprebackupvacuum  = false,
   $burpcron              = false,
   $pre_command           = undef,
   $burpcronminute        = '*/20',
@@ -89,7 +90,8 @@ class role_backup(
       pgsqlbackupuser       => $role_backup::pgsqlbackupuser,
       pgsqlalldatabases     => $role_backup::pgsqlalldatabases,
       pgsqldatabasearray    => $role_backup::pgsqldatabasearray,
-      backuprootfolder      => $role_backup::backuprootfolder
+      backuprootfolder      => $role_backup::backuprootfolder,
+      pgsqlprebackupvacuum  => $role_backup::pgsqlprebackupvacuum
     }
   }
 

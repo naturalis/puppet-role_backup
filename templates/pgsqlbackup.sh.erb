@@ -15,11 +15,22 @@ PATH=/usr/bin:/usr/sbin:/bin:/sbin
 set -o pipefail
 chown -R ${USER}:root /var/backup
 
+
+
 <% if @pgsqlalldatabases == true -%>
 su - ${USER} -c "pg_dumpall" | gzip -c > ${DIR}/${PREFIX}.gz
 <% else -%>
 <% @pgsqldatabasearray.each do |db| -%>
+<<<<<<< Updated upstream
 su - ${USER} -c "pg_dumpall -g -U postgres -f ${DIR}/${PREFIX}_<%=db %>_globals.sql"
+=======
+<% if @pgsqlprebackupvacuum == true -%>
+/bin/su postgres -c "/usr/bin/psql -d <%=db %> <<EOF
+SET statement_timeout = 0;
+VACUUM ANALYZE;
+EOF" | grep -v "SET"
+<% end -%> 
+>>>>>>> Stashed changes
 su - ${USER} -c "pg_dump <%=db %> -Fc --schema-only -f ${DIR}/${PREFIX}_<%=db %>_schemaonly.dump"
 su - ${USER} -c "pg_dump <%=db %> -Fc -f ${DIR}/${PREFIX}_<%=db %>.dump"
 <% end -%> 

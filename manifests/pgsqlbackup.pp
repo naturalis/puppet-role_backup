@@ -7,6 +7,7 @@ class role_backup::pgsqlbackup(
   $pgsqldatabasearray   = undef,
   $pgsqlbackupuser      = undef,
   $backuprootfolder     = undef,
+  $pgsqlprebackupvacuum = undef,
 ){
 
 # create mysql directory in backuprootfolder
