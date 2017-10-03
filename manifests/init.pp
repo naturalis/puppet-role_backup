@@ -149,7 +149,7 @@ $pre_command_array = [$role_backup::pre_command, $sambascript, $mysqlscript, $pg
   }
 
 # export check so sensu monitoring can make use of it
-  @sensu::check { 'Check Backup' :
+  @@sensu::check { 'Check Backup' :
     command => '/usr/local/sbin/chkburp.sh',
     tag     => 'central_sensu',
 }
