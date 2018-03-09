@@ -32,6 +32,8 @@ class role_backup(
   $burpcronhour          = '*',
   $burpexcludes          = ['/var/spool','/tmp'],
   $burpoptions           = ['# random test option'],
+  $docker                = false,
+  $dockercontainer       = "server-db-1",
 
 # restore options
   $burprestorecname      = undef,
